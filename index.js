@@ -245,27 +245,29 @@ app.get("/status/:code", async (req, res) => {
     writeLinksData(data);
     
     // Calculate uptime
-    const addedTime = new Date(updatedLink.addedAt);
-    const now = new Date();
-    const uptimeHours = Math.floor((now - addedTime) / (1000 * 60 * 60));
-    const uptimeDays = Math.floor(uptimeHours / 24);
-    
-    res.json({
-        success: true,
-        data: {
-            code: updatedLink.code,
-            url: updatedLink.url,
-            status: updatedLink.status,
-            responseTime: `${updatedLink.responseTime}ms`,
-            lastCheck: updatedLink.lastCheck,
-            lastSuccess: updatedLink.lastSuccess || "Never",
-            addedAt: updatedLink.addedAt,
-            uptime: `${uptimeDays}d ${uptimeHours % 24}h`,
-            failCount: updatedLink.failCount || 0,
-            totalChecks: updatedLink.totalChecks || 1,
-            successRate: `${Math.round((((updatedLink.totalChecks || 1) - (updatedLink.failCount || 0)) / (updatedLink.totalChecks || 1)) * 100)}%`
-        }
-    });
+const addedTime = new Date(updatedLink.addedAt);
+const now = new Date();
+const diffMs = now - addedTime;
+
+const uptimeDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+const uptimeHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+const uptimeMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+res.json({
+    success: true,
+    data: {
+        code: updatedLink.code,
+        url: updatedLink.url,
+        status: updatedLink.status,
+        responseTime: `${updatedLink.responseTime}ms`,
+        lastCheck: updatedLink.lastCheck,
+        lastSuccess: updatedLink.lastSuccess || "Never",
+        addedAt: updatedLink.addedAt,
+        uptime: `${uptimeDays}d ${uptimeHours}h ${uptimeMinutes}m`,
+        failCount: updatedLink.failCount || 0,
+        totalChecks: updatedLink.totalChecks || 1,
+        successRate: `${Math.round((((updatedLink.totalChecks || 1) - (updatedLink.failCount || 0)) / (updatedLink.totalChecks || 1)) * 100)}%`
+    }
 });
 
 // Get all links (Admin)
